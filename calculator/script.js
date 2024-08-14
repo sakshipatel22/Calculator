@@ -1,76 +1,89 @@
-const currdisplay=document.querySelector(".curr-display");
-const prevdisplay=document.querySelector(".prev-display");
-const number=document.querySelectorAll(".number");
-const operand=document.querySelectorAll(".operation");
-const clearbtn=document.querySelector(".clear");
-const delbtn=document.querySelector(".delete");
-const equalbtn=document.querySelector(".equal");
+const currDisplay = document.querySelector(".curr-display");
+const prevDisplay = document.querySelector(".prev-display");
+const numberButtons = document.querySelectorAll(".number");
+const operationButtons = document.querySelectorAll(".operation");
+const clearBtn = document.querySelector(".clear");
+const deleteBtn = document.querySelector(".delete");
+const equalBtn = document.querySelector(".equal");
 
-let operation;
+let currentOperation = null;
+let shouldResetScreen = false;
 
-function appendnumber(number){
-    if(number==="." && currdisplay.innerHTML.includes("."))return;
-    currdisplay.innerHTML +=number;
+function appendNumber(number) {
+    if (currDisplay.innerHTML === "0" || shouldResetScreen) {
+        resetScreen();
+    }
+    if (number === "." && currDisplay.innerHTML.includes(".")) return;
+    currDisplay.innerHTML += number;
 }
 
-function chooseoperation(operand){
-    if(currdisplay.innerHTML==="")return;
-    compute(operand);
-    operation=operand;
-    currdisplay.innerHTML=operand;
-    prevdisplay.innerHTML=currdisplay.innerHTML;
-    currdisplay.innerHTML="";
+function chooseOperation(operation) {
+    if (currDisplay.innerHTML === "") return;
+    if (prevDisplay.innerHTML !== "") {
+        compute();
+    }
+    currentOperation = operation;
+    prevDisplay.innerHTML = `${currDisplay.innerHTML} ${operation}`;
+    shouldResetScreen = true;
 }
 
-function cleardisplay(){
-    currdisplay.innerHTML="";
-    prevdisplay.innerHTML="";
-
-}
-
-number.forEach((number) => { 
-    number.addEventListener("click",()=>{
-        appendnumber(number.innerHTML);
-    });
-});
-operand.forEach((operand) => { 
-    operand.addEventListener("click",()=>{
-        chooseoperation(operand.innerHTML);
-    });
-});
-
-clearbtn.addEventListener("click",()=>{
-    cleardisplay();
-});
-equalbtn.addEventListener("click",()=>{
-    compute();
-    currdisplay.innerHTML=result.innerHTML;
-});
-delbtn.addEventListener("click",()=>{
-    currdisplay.innerHTML=currdisplay.innerHTML.slice(0,-1);
-});
-
-function compute(operand){
+function compute() {
+    const previousValue = parseFloat(prevDisplay.innerHTML);
+    const currentValue = parseFloat(currDisplay.innerHTML);
     let result;
-    const previousvalue=parseFloat(prevdisplay.innerHTML);
-    const currentvalue=parseFloat(currdisplay.innerHTML);
 
-    if(isNaN(previousvalue)||isNaN(currentvalue))return;
-    switch(operand){
+    if (isNaN(previousValue) || isNaN(currentValue)) return;
+
+    switch (currentOperation) {
         case "+":
-            result=previousvalue+currentvalue;
+            result = previousValue + currentValue;
             break;
         case "-":
-            result=previousvalue-currentvalue;
+            result = previousValue - currentValue;
             break;
         case "*":
-            result=previousvalue*currentvalue;
+            result = previousValue * currentValue;
             break;
         case "/":
-            result=previousvalue/currentvalue;
+            result = previousValue / currentValue;
             break;
-         default:
-            return;   
+        default:
+            return;
     }
-    currdisplay.innerHTML=result;
+
+    currDisplay.innerHTML = result;
+    prevDisplay.innerHTML = "";
+    currentOperation = null;
 }
+
+function resetScreen() {
+    currDisplay.innerHTML = "";
+    shouldResetScreen = false;
+}
+
+function clearDisplay() {
+    currDisplay.innerHTML = "";
+    prevDisplay.innerHTML = "";
+    currentOperation = null;
+}
+
+function deleteLast() {
+    currDisplay.innerHTML = currDisplay.innerHTML.slice(0, -1);
+}
+
+numberButtons.forEach((button) => {
+    button.addEventListener("click", () => appendNumber(button.innerHTML));
+});
+
+operationButtons.forEach((button) => {
+    button.addEventListener("click", () => chooseOperation(button.innerHTML));
+});
+
+equalBtn.addEventListener("click", () => {
+    compute();
+    shouldResetScreen = true;
+});
+
+clearBtn.addEventListener("click", clearDisplay);
+
+deleteBtn.addEventListener("click", deleteLast);
